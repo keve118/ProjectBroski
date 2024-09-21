@@ -23,71 +23,42 @@ import com.badlogic.gdx.controllers.Controllers;
 import com.badlogic.gdx.controllers.ControllerMapping.*;
 
 public class Broski implements ApplicationListener {
-    private SpriteBatch batch;
-    private Texture image;
-    Texture backgroundTexture;
-    Texture bucketTexture;
-    Texture dropTexture;
-    Sound dropSound;
-    Music music;
 
     SpriteBatch spriteBatch;
     FitViewport viewport;
-
     Sprite bucketSprite; // Declare a new Sprite variable
-
-    Vector2 touchPos;
-
     Array<Sprite> dropSprites;
     float dropTimer;
+
+
 
     Rectangle bucketRectangle;
     Rectangle dropRectangle;
 
+    ControllerLogic controllerLogic = new ControllerLogic();
+
 
     @Override
     public void create() {
-        backgroundTexture = new Texture("background.png");
-        bucketTexture = new Texture("bucket.png");
-        dropTexture = new Texture("drop.png");
-        dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.mp3"));
-        music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
 
         spriteBatch = new SpriteBatch();
         viewport = new FitViewport(8, 5);
 
-        bucketSprite = new Sprite(bucketTexture); // Initialize the sprite based on the texture
+        bucketSprite = new Sprite(MediaManager.bucketTexture); // Initialize the sprite based on the texture
         bucketSprite.setSize(1, 1); // Define the size of the sprite
 
-        touchPos = new Vector2();
+
 
         dropSprites = new Array<>();
 
         bucketRectangle = new Rectangle();
         dropRectangle = new Rectangle();
 
-        music.setLooping(true);
-        music.setVolume(.5f);
-        music.play();
+        MediaManager.music.setLooping(true);
+        MediaManager. music.setVolume(.5f);
+        MediaManager.music.play();
 
         createDroplet();
-
-        // Listen for controller connection/disconnection events
-        Controllers.addListener(new ControllerAdapter() {
-            @Override
-            public void connected(Controller controller) {
-                Gdx.app.log("Controller", "Controller connected: " + controller.getName());
-            }
-
-            @Override
-            public void disconnected(Controller controller) {
-                Gdx.app.log("Controller", "Controller disconnected: " + controller.getName());
-            }
-        });
-
-
-
-
 
     }
 
@@ -104,50 +75,7 @@ public class Broski implements ApplicationListener {
         draw();
     }
 
-    private void input() {
-        float speed = 4f;
-        float delta = Gdx.graphics.getDeltaTime();
-
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            bucketSprite.translateX(speed * delta);
-        } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            bucketSprite.translateX(-speed * delta);
-        }
-
-        if (Gdx.input.isTouched()) {
-            touchPos.set(Gdx.input.getX(), Gdx.input.getY()); // Get where the touch happened on screen
-            viewport.unproject(touchPos); // Convert the units to the world units of the viewport
-            bucketSprite.setCenterX(touchPos.x); // Change the horizontally centered position of the bucket
-        }
-
-        // Get the first controller
-        Controller controller = Controllers.getControllers().first();
-
-        // Check if the controller is connected
-        if (controller != null) {
-            // Handle Xbox controller buttons and axes
-            if (controller.getButton(controller.getMapping().buttonB)) {
-                bucketSprite.translateX(speed * delta);
-            }
-            if (controller.getButton(controller.getMapping().buttonX)) {
-                bucketSprite.translateX(-speed * delta);
-            }
-
-
-            float axisX = controller.getAxis(controller.getMapping().axisLeftX);
-
-            if (axisX > 0.1f) {
-                // Move the sprite to the right
-                bucketSprite.translateX(speed * delta);
-            }
-            else if (axisX < -0.1f) {
-                // Move the sprite to the left
-                bucketSprite.translateX(-speed * delta );
-            }
-
-
-        }
-    }
+    private void input() { controllerLogic.input(bucketSprite,viewport); }
 
     private void logic() {
         float worldWidth = viewport.getWorldWidth();
@@ -171,7 +99,7 @@ public class Broski implements ApplicationListener {
             if (dropSprite.getY() < -dropHeight) dropSprites.removeIndex(i);
             else if (bucketRectangle.overlaps(dropRectangle)) {
                 dropSprites.removeIndex(i);
-                dropSound.play(); // Play the sound
+                MediaManager.dropSound.play(); // Play the sound
             }
         }
 
@@ -193,7 +121,7 @@ public class Broski implements ApplicationListener {
         float worldWidth = viewport.getWorldWidth();
         float worldHeight = viewport.getWorldHeight();
 
-        spriteBatch.draw(backgroundTexture, 0, 0, worldWidth, worldHeight);
+        spriteBatch.draw(MediaManager.backgroundTexture, 0, 0, worldWidth, worldHeight);
         bucketSprite.draw(spriteBatch);
 
         // draw each sprite
@@ -210,7 +138,7 @@ public class Broski implements ApplicationListener {
         float worldWidth = viewport.getWorldWidth();
         float worldHeight = viewport.getWorldHeight();
 
-        Sprite dropSprite = new Sprite(dropTexture);
+        Sprite dropSprite = new Sprite(MediaManager.dropTexture);
         dropSprite.setSize(dropWidth, dropHeight);
         dropSprite.setX(MathUtils.random(0f, worldWidth - dropWidth)); // Randomize the drop's x position
         dropSprite.setY(worldHeight);
