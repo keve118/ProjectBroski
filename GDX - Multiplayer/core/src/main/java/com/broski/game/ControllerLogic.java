@@ -17,21 +17,9 @@ public class ControllerLogic {
         touchPos = new Vector2();
     }
 
-    public void input(Sprite bucketSprite, FitViewport viewport) {
+    public void controllerInput(Sprite bucketSprite, FitViewport viewport) {
         float speed = 4f;
         float delta = Gdx.graphics.getDeltaTime();
-
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            bucketSprite.translateX(speed * delta);
-        } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            bucketSprite.translateX(-speed * delta);
-        }
-
-        if (Gdx.input.isTouched()) {
-            touchPos.set(Gdx.input.getX(), Gdx.input.getY()); // Get where the touch happened on screen
-            viewport.unproject(touchPos); // Convert the units to the world units of the viewport
-            bucketSprite.setCenterX(touchPos.x); // Change the horizontally centered position of the bucket
-        }
 
         // Get the first controller
         if (Controllers.getControllers().size > 0){
@@ -58,14 +46,7 @@ public class ControllerLogic {
                     // Move the sprite to the left
                     bucketSprite.translateX(-speed * delta );
                 }
-
-
             }
-
-
         }
-
     }
-
-
 }
